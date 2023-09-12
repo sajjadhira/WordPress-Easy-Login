@@ -1,4 +1,7 @@
 <?php
+!defined('WPINC') && die;
+
+
 class Init
 {
 
@@ -19,12 +22,31 @@ class Init
     }
     public function activate_hook()
     {
-        // do something
+        // create tables
+        global $wpdb;
+        $charset_collate = $wpdb->get_charset_collate();
+        $prefix = $wpdb->prefix;
+        $table_name = $prefix . rtrim($this->instance->plugin_prefix, "_");
+        $sql = "CREATE TABLE `$table_name` (
+            `id` bigint NOT NULL AUTO_INCREMENT,
+            `token` varchar(255) NOT NULL,
+            `wp_user_id` bigint NULL,
+            `status` int DEFAULT 0,
+            `created_at` datetime NULL,
+            PRIMARY KEY (id)
+        ) $charset_collate;";
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
     }
 
     public function deactivate_hook()
     {
-        // do something
+        // drop tables
+        global $wpdb;
+        $prefix = $wpdb->prefix;
+        $table_name = $prefix . rtrim($this->instance->plugin_prefix, "_");
+        $sql = "DROP TABLE IF EXISTS `$table_name`;";
+        $wpdb->query($sql);
     }
 }
 
