@@ -16,7 +16,7 @@ class LoginComponent
         $this->autoDelete();
 
         $hash =  hash('sha256', time());
-        $url = site_url('?' . $this->instance->plugin_slug . '=' . $hash);
+        $url = site_url('?' . $this->instance->plugin_prefix . 'to=' . $hash);
         $qr = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={$url}";
 
         // add this hash to database
