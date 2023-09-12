@@ -11,7 +11,9 @@ class LoginComponent
     public function login_form_callback()
     {
 
+
         // generate sha256 hash
+        $this->autoDelete();
 
         $hash =  hash('sha256', time());
         $url = site_url('?' . $this->instance->plugin_slug . '=' . $hash);
@@ -40,6 +42,21 @@ class LoginComponent
 
     <?php
     }
-}
 
+    public function autoDelete()
+    {
+        global $wpdb;
+        $table_name = $wpdb->prefix . rtrim($this->instance->plugin_prefix, "_");
+        $deleteData = $wpdb->query(
+            $wpdb->prepare(
+                "DELETE FROM $table_name WHERE created_at < %s",
+                date('Y-m-d H:i:s', strtotime('-5 minutes'))
+            )
+        );
+
+        if (!$deleteData) {
+            echo "Error: " . $wpdb->last_error . ' ' . $wpdb->last_query;
+        }
+    }
+}
 new LoginComponent;
