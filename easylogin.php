@@ -17,6 +17,9 @@ class EasyLogin
     public $plugin_slug = 'easy-login';
     public $plugin_prefix = 'easy_login_';
     public $boot = 'boot';
+    public $ControllerType = 'Controller';
+    public $viewType = 'Component';
+    public $viewsDir = 'views';
     public $ext;
     public static $instance = null;
     public $file;

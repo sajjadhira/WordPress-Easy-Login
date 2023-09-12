@@ -6,6 +6,8 @@ class Init
 {
 
     protected $instance;
+    public $controller = 'controllers';
+    public $views;
 
     public function __construct()
     {
@@ -14,6 +16,17 @@ class Init
         add_action('init', array($this, 'load_plugin_textdomain_callback'));
         register_activation_hook($this->instance->file, array($this, 'activate_hook'));
         register_deactivation_hook($this->instance->file, array($this, 'deactivate_hook'));
+
+        $dir = $this->instance->plugin_dir . $this->controller . DIRECTORY_SEPARATOR;
+        $files = scandir($dir);
+        foreach ($files as $file) {
+            if (is_file($dir . $file)) {
+                $ext = strrchr($file, '.');
+                if ($ext == $this->instance->ext) {
+                    require_once($dir . $file);
+                }
+            }
+        }
     }
 
     public function load_plugin_textdomain_callback()
@@ -47,6 +60,23 @@ class Init
         $table_name = $prefix . rtrim($this->instance->plugin_prefix, "_");
         $sql = "DROP TABLE IF EXISTS `$table_name`;";
         $wpdb->query($sql);
+    }
+
+
+
+    function myplugin_add_login_fields()
+    {
+
+        //Get and set any values already sent
+        $user_extra = (isset($_POST['user_extra'])) ? $_POST['user_extra'] : '';
+?>
+
+        <p>
+            <label for="user_extra"><?php _e('Extra Field', 'mydomain') ?><br />
+                <input type="text" name="user_extra" id="user_extra" class="input" value="<?php echo esc_attr(stripslashes($user_extra)); ?>" size="25" /></label>
+        </p>
+
+<?php
     }
 }
 
