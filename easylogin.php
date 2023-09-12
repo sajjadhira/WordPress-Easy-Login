@@ -14,16 +14,28 @@ Text Domain: easy-login
 class EasyLogin
 {
     public $version = '1.0';
-    protected $plugin_slug = 'easy-login';
-    protected $plugin_prefix = 'easy_login_';
-    protected $file = 'boot';
-    protected $ext;
-    protected static $instance = null;
+    public $plugin_slug = 'easy-login';
+    public $plugin_prefix = 'easy_login_';
+    public $boot = 'boot';
+    public $ext;
+    public static $instance = null;
+    public $file;
+    public $plugin_dir;
     public function __construct()
     {
-        // get current file extension
+        $this->file = __FILE__;
+        $this->plugin_dir = plugin_dir_path($this->file);
         $this->ext = strrchr(__FILE__, '.');
-        require_once(plugin_dir_path(__FILE__) . $this->file . $this->ext);
+        $file = $this->plugin_dir . $this->boot . $this->ext;
+        if (file_exists($file))
+            require_once($file);
+    }
+
+    public static function get_instance()
+    {
+        if (null == self::$instance)
+            self::$instance = new self;
+        return self::$instance;
     }
 }
 
