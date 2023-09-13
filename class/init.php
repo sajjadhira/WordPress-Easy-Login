@@ -43,6 +43,8 @@ class Init
         $sql = "CREATE TABLE `$table_name` (
             `id` bigint NOT NULL AUTO_INCREMENT,
             `token` varchar(255) NOT NULL,
+            `browser` varchar(255) NULL,
+            `ip` varchar(255) NULL,
             `wp_user_id` bigint NULL,
             `status` int DEFAULT 0,
             `created_at` datetime NULL,
