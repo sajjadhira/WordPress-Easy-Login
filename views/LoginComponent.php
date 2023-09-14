@@ -47,6 +47,32 @@ class LoginComponent
     <?php
     }
 
+    function internal_login()
+    {
+        $this->autoDelete();
+        global $wpdb;
+        $table_name = $wpdb->prefix . rtrim($this->instance->plugin_prefix, "_");
+        $token = $_GET[$this->instance->plugin_prefix . 'to'];
+        $row = $wpdb->get_row("SELECT * FROM $table_name WHERE token = '$token'");
+
+        if ($row) {
+            $user = get_user_by('id', $row->user_id);
+            if ($user) {
+                wp_set_current_user($user->ID, $user->user_login);
+                wp_set_auth_cookie($user->ID);
+                do_action('wp_login', $user->user_login, $user);
+                $wpdb->delete(
+                    $table_name,
+                    array(
+                        'token' => $token,
+                    )
+                );
+                wp_redirect(home_url());
+                exit;
+            }
+        }
+    }
+
     public function autoDelete()
     {
         global $wpdb;
