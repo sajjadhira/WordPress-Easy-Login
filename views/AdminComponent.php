@@ -15,14 +15,17 @@ class AdminComponent
 
         if (isset($_GET['page']) && $_GET['page'] == 'easy-login') {
             add_action('admin_footer', [$this, 'easylogin_fetch_callback']);
+            add_action('admin_enqueue_scripts', [$this, 'admin_enqueue_scripts_callback']);
         }
     }
 
 
     public function admin_enqueue_scripts_callback()
     {
-        wp_enqueue_script('easy-login-admin-style', $this->instance->plugin_url . 'assets/css/admin.css');
-        wp_enqueue_script('easy-login-admin-script', $this->instance->plugin_url . 'assets/js/admin.js', array('jquery'), '1.0', true);
+        wp_register_style('easy-login-admin-style', $this->instance->plugin_url . 'assets/css/admin.css');
+        wp_register_script('easy-login-admin-script', $this->instance->plugin_url . 'assets/js/admin.js', array('jquery'), '1.0', true);
+        wp_enqueue_style('easy-login-admin-style');
+        wp_enqueue_script('easy-login-admin-script');
 
         // enqueue admin style and script
 
@@ -102,8 +105,10 @@ class AdminComponent
                     .then(response => response.json())
                     .then(data => {
                         if (data.status == 1) {
-                            // get redirect url
-                            window.location.href = data.redirect;
+                            // set easyloginAdmin html to success message
+
+                            document.getElementById('easyloginAdmin').innerHTML = '<h4>Login Success</h4><br /><p>You are logged in successfully. You can close this window.</p><br />';
+
                         } else if (data.status == 404) {
                             // reload page
                             window.location.reload();

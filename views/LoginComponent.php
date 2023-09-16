@@ -50,12 +50,6 @@ class LoginComponent
                     wp_set_current_user($user->ID, $user->user_login);
                     wp_set_auth_cookie($user->ID);
                     do_action('wp_login', $user->user_login, $user);
-                    $wpdb->delete(
-                        $table_name,
-                        array(
-                            'token' => $token,
-                        )
-                    );
                     // admin url
                     $admin_url = admin_url();
                     echo json_encode(array('status' => 1, 'redirect' => $admin_url));
@@ -76,6 +70,44 @@ class LoginComponent
     {
 
 
+
+
+        if (isset($_GET['easy_login_from_token'])) {
+
+            // add header type json
+
+            header('Content-Type: application/json');
+
+            $token = $_GET['easy_login_from_token'];
+            $token = sanitize_text_field($token);
+
+            global $wpdb;
+            $table_name = $wpdb->prefix . rtrim($this->instance->plugin_prefix, "_");
+
+            $toke_query = $wpdb->get_row("SELECT * FROM $table_name WHERE token = '$token'");
+
+            if ($toke_query) {
+
+                // delete token if token found and status is 1
+
+                if ($toke_query->status == 1) {
+                    // $wpdb->delete(
+                    //     $table_name,
+                    //     array(
+                    //         'wp_user_id' => $toke_query->wp_user_id,
+                    //     )
+                    // );
+                    echo json_encode(array('status' => 1));
+                    exit;
+                } else {
+                    echo json_encode(array('status' => 0));
+                    exit;
+                }
+            } else {
+                echo json_encode(array('status' => 404));
+                exit;
+            }
+        }
 
 
         if (isset($_GET['easy_login_from'])) {
@@ -104,10 +136,22 @@ class LoginComponent
                     wp_set_current_user($user->ID, $user->user_login);
                     wp_set_auth_cookie($user->ID);
                     do_action('wp_login', $user->user_login, $user);
-                    $wpdb->delete(
+                    // $wpdb->delete(
+                    //     $table_name,
+                    //     array(
+                    //         'wp_user_id' => $user_id,
+                    //     )
+                    // );
+
+                    // update status to 1
+
+                    $wpdb->update(
                         $table_name,
                         array(
-                            'wp_user_id' => $user_id,
+                            'status' => 1
+                        ),
+                        array(
+                            'token' => $token
                         )
                     );
                     // admin url
