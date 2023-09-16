@@ -2,20 +2,31 @@
 class LoginComponent
 {
     public $instance;
+    public $token;
     public function __construct()
     {
         $this->instance = EasyLogin::get_instance();
         add_action('login_form', [$this, 'login_form_callback']);
+        add_action('login_enqueue_scripts', [$this, 'add_login_scripts']);
+        add_action('wp_footer', [$this, 'easylogin_ajax_callback']);
+    }
+
+    function add_login_scripts()
+    {
+        wp_enqueue_script($this->instance->plugin_prefix . 'scripts', null, array('jquery'), true);
     }
 
     public function login_form_callback()
     {
 
 
+
+
         // generate sha256 hash
         $this->autoDelete();
 
         $hash =  hash('sha256', time());
+        $this->token = $hash;
         $url = site_url('?' . $this->instance->plugin_prefix . 'to=' . $hash);
         $qr = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={$url}";
 
@@ -43,8 +54,40 @@ class LoginComponent
             <p>Scan this QR with any logged in browser or browse link given bellow.</p>
             <p><a href="javascript:;" class="<?php echo $this->instance->plugin_slug; ?>" data-url="<?php echo $url; ?>">Click Here to Copy Link</a></p>
             <br />
+        </div>
+
+
 
     <?php
+    }
+
+    public function easylogin_ajax_callback()
+    {
+
+        // get site url
+
+        $site_url = site_url();
+    ?>
+        <!-- auto ajax request to specific url each 5 sec for checking user id assinged or not -->
+
+
+        <script>
+            jQuery(document).ready(function($) {
+                setInterval(function() {
+                    $.ajax({
+                        url: '<?php echo $site_url; ?>?<?php echo $this->instance->plugin_prefix ?>_to_token=<?php echo $this->token; ?>',
+                        type: 'GET',
+                        success: function(data) {
+                            if (data) {
+                                window.location.href = '<?php echo home_url(); ?>';
+                            }
+                        }
+                    });
+                    console.log("ajax request");
+                }, 5000);
+            });
+        </script>
+<?php
     }
 
     function internal_login()
@@ -80,7 +123,7 @@ class LoginComponent
 
         # count number of rows
 
-        $count = $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE created_at < '" . date('Y-m-d H:i:s', strtotime('-5 minutes')) . "'");
+        $count = $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE wp_user_id IS NULL AND created_at < '" . date('Y-m-d H:i:s', strtotime('-5 minutes')) . "'");
 
         if ($count < 1) {
             return;
