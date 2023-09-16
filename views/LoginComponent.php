@@ -1,4 +1,8 @@
 <?php
+
+use chillerlan\QRCode\QRCode;
+
+
 class LoginComponent
 {
     public $instance;
@@ -74,16 +78,20 @@ class LoginComponent
     public function login_form_callback()
     {
 
-
-
-
+        $qrLib = $this->instance->plugin_dir . DIRECTORY_SEPARATOR . 'libs/vendor/autoload.php';
+        if (file_exists($qrLib)) {
+            require_once($qrLib);
+        } else {
+            wp_die('QR library not found');
+        }
         // generate sha256 hash
         $this->autoDelete();
 
         $hash =  hash('sha256', time());
         $this->token = $hash;
         $url = site_url('?' . $this->instance->plugin_prefix . 'to=' . $hash);
-        $qr = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={$url}";
+        $qr = (new QRCode)->render($url);
+        // $qr = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={$url}";
 
         // add this hash to database
 
@@ -106,7 +114,10 @@ class LoginComponent
             <img src="<?php echo $qr; ?>" alt="<?php echo $url; ?>">
             </p>
             <br />
-            <p><a href="javascript:;" class="<?php echo $this->instance->plugin_slug; ?>" onclick="copy(this)"><?php echo $url; ?></a></p>
+            <p>
+                <span style="display: none;" id="loginUrl"><?php echo $url; ?></span>
+                <a href=" javascript:;" class="<?php echo $this->instance->plugin_slug; ?>" onclick="copyURL()"><span class="dashicons dashicons-clipboard"></span> Copy Link</a>
+            </p>
             <br />
             <p>Scan this QR with any logged in browser or paste link to logged browser.</p>
             <br />
@@ -144,13 +155,14 @@ class LoginComponent
                     });
             }, 5000);
 
-            function copy(that) {
-                var inp = document.createElement('input');
-                document.body.appendChild(inp)
-                inp.value = that.textContent
-                inp.select();
-                document.execCommand('copy', false);
-                inp.remove();
+            let text = document.getElementById('loginUrl').innerHTML;
+            const copyURL = async () => {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    console.log('Content copied to clipboard');
+                } catch (err) {
+                    console.error('Failed to copy: ', err);
+                }
             }
         </script>
 <?php
