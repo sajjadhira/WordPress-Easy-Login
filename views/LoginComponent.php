@@ -15,6 +15,7 @@ class LoginComponent
         add_action('login_footer', [$this, 'easylogin_fetch_callback']);
 
         add_action('init', [$this, 'easylogin_login_callback']);
+        add_action('init', [$this, 'easylogin_login_from_callback']);
     }
 
     function easylogin_login_callback()
@@ -66,6 +67,58 @@ class LoginComponent
             } else {
                 echo json_encode(array('status' => 404));
                 exit;
+            }
+        }
+    }
+
+
+    public function easylogin_login_from_callback()
+    {
+
+
+
+
+        if (isset($_GET['easy_login_from'])) {
+
+
+            // get token
+            $token = $_GET['easy_login_from'];
+
+            // sanetize token
+            $token = sanitize_text_field($token);
+
+            // get token data from database
+
+            global $wpdb;
+            $table_name = $wpdb->prefix . rtrim($this->instance->plugin_prefix, "_");
+
+            $toke_query = $wpdb->get_row("SELECT * FROM $table_name WHERE token = '$token'");
+
+            if ($toke_query) {
+                // get user id
+                $user_id = $toke_query->wp_user_id;
+
+                // get user data
+                $user = get_user_by('id', $user_id);
+                if ($user) {
+                    wp_set_current_user($user->ID, $user->user_login);
+                    wp_set_auth_cookie($user->ID);
+                    do_action('wp_login', $user->user_login, $user);
+                    $wpdb->delete(
+                        $table_name,
+                        array(
+                            'wp_user_id' => $user_id,
+                        )
+                    );
+                    // admin url
+                    $admin_url = admin_url();
+                    wp_redirect($admin_url);
+                    exit;
+                } else {
+                    wp_die('user not found');
+                }
+            } else {
+                wp_die('token not exist');
             }
         }
     }
