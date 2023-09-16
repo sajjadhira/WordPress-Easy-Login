@@ -51,7 +51,9 @@ class LoginComponent
                             'token' => $token,
                         )
                     );
-                    echo json_encode(array('status' => 1));
+                    // admin url
+                    $admin_url = admin_url();
+                    echo json_encode(array('status' => 1, 'redirect' => $admin_url));
                     exit;
                 } else {
                     echo json_encode(array('status' => 0));
@@ -104,8 +106,9 @@ class LoginComponent
             <img src="<?php echo $qr; ?>" alt="<?php echo $url; ?>">
             </p>
             <br />
-            <p>Scan this QR with any logged in browser or browse link given bellow.</p>
-            <p><a href="javascript:;" class="<?php echo $this->instance->plugin_slug; ?>" data-url="<?php echo $url; ?>">Click Here to Copy Link</a></p>
+            <p><a href="javascript:;" class="<?php echo $this->instance->plugin_slug; ?>" onclick="copy(this)"><?php echo $url; ?></a></p>
+            <br />
+            <p>Scan this QR with any logged in browser or paste link to logged browser.</p>
             <br />
         </div>
 
@@ -132,16 +135,23 @@ class LoginComponent
                     .then(response => response.json())
                     .then(data => {
                         if (data.status == 1) {
-                            window.location.href = '<?php echo $site_url; ?>';
+                            // get redirect url
+                            window.location.href = data.redirect;
                         } else if (data.status == 404) {
                             // reload page
                             window.location.reload();
-                        } else if (data.status == 0) {
-                            // reload page
-                            console.log('user not found');
                         }
                     });
             }, 5000);
+
+            function copy(that) {
+                var inp = document.createElement('input');
+                document.body.appendChild(inp)
+                inp.value = that.textContent
+                inp.select();
+                document.execCommand('copy', false);
+                inp.remove();
+            }
         </script>
 <?php
     }
