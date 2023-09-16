@@ -8,7 +8,60 @@ class LoginComponent
         $this->instance = EasyLogin::get_instance();
         add_action('login_form', [$this, 'login_form_callback']);
         add_action('login_enqueue_scripts', [$this, 'add_login_scripts']);
-        add_action('wp_footer', [$this, 'easylogin_ajax_callback']);
+        add_action('login_footer', [$this, 'easylogin_fetch_callback']);
+
+        add_action('init', [$this, 'easylogin_login_callback']);
+    }
+
+    function easylogin_login_callback()
+    {
+
+        // declear header type json
+
+        header('Content-Type: application/json');
+
+        if (isset($_GET[$this->instance->plugin_prefix . 'to_token'])) {
+            // get token
+            $token = $_GET[$this->instance->plugin_prefix . 'to_token'];
+            // sanetize token
+            $token = sanitize_text_field($token);
+
+
+
+            // get token data from database
+
+            global $wpdb;
+            $table_name = $wpdb->prefix . rtrim($this->instance->plugin_prefix, "_");
+
+            $toke_query = $wpdb->get_row("SELECT * FROM $table_name WHERE token = '$token'");
+
+            if ($toke_query) {
+                // get user id
+                $user_id = $toke_query->wp_user_id;
+
+                // get user data
+                $user = get_user_by('id', $user_id);
+                if ($user) {
+                    wp_set_current_user($user->ID, $user->user_login);
+                    wp_set_auth_cookie($user->ID);
+                    do_action('wp_login', $user->user_login, $user);
+                    $wpdb->delete(
+                        $table_name,
+                        array(
+                            'token' => $token,
+                        )
+                    );
+                    echo json_encode(array('status' => 1));
+                    exit;
+                } else {
+                    echo json_encode(array('status' => 0));
+                    exit;
+                }
+            } else {
+                echo json_encode(array('status' => 404));
+                exit;
+            }
+        }
     }
 
     function add_login_scripts()
@@ -61,7 +114,7 @@ class LoginComponent
     <?php
     }
 
-    public function easylogin_ajax_callback()
+    public function easylogin_fetch_callback()
     {
 
         // get site url
@@ -72,20 +125,23 @@ class LoginComponent
 
 
         <script>
-            jQuery(document).ready(function($) {
-                setInterval(function() {
-                    $.ajax({
-                        url: '<?php echo $site_url; ?>?<?php echo $this->instance->plugin_prefix ?>_to_token=<?php echo $this->token; ?>',
-                        type: 'GET',
-                        success: function(data) {
-                            if (data) {
-                                window.location.href = '<?php echo home_url(); ?>';
-                            }
+            let urlFetech = '<?php echo $site_url; ?>?<?php echo $this->instance->plugin_prefix ?>to_token=<?php echo $this->token; ?>';
+
+            setInterval(function() {
+                fetch(urlFetech)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status == 1) {
+                            window.location.href = '<?php echo $site_url; ?>';
+                        } else if (data.status == 404) {
+                            // reload page
+                            window.location.reload();
+                        } else if (data.status == 0) {
+                            // reload page
+                            console.log('user not found');
                         }
                     });
-                    console.log("ajax request");
-                }, 5000);
-            });
+            }, 5000);
         </script>
 <?php
     }
