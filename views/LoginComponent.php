@@ -213,7 +213,7 @@ class LoginComponent
             <br />
             <p>
                 <span style="display: none;" id="loginUrl"><?php echo $url; ?></span>
-                <a href=" javascript:;" class="<?php echo $this->instance->plugin_slug; ?>" onclick="copyURL()"><span class="dashicons dashicons-clipboard"></span> Copy Link</a>
+                <a href=" javascript:;" class="<?php echo $this->instance->plugin_slug; ?>" onclick="copyURL()" id="copyToUrl"><span class="dashicons dashicons-clipboard"></span> Copy Link</a>
             </p>
             <br />
             <p>Scan this QR with any logged in browser or paste link to logged browser.</p>
@@ -256,7 +256,17 @@ class LoginComponent
             const copyURL = async () => {
                 try {
                     await navigator.clipboard.writeText(text);
-                    console.log('Content copied to clipboard');
+                    // console.log('Content copied to clipboard');
+
+                    // change text of copyToUrl id
+
+                    document.getElementById('copyToUrl').innerHTML = '<span class="dashicons dashicons-saved"></span> Link Copied to clipboard';
+
+                    setTimeout(() => {
+                        // change text of copyToUrl id
+
+                        document.getElementById('copyToUrl').innerHTML = '<span class="dashicons dashicons-clipboard"></span> Copy Link';
+                    }, 5000);
                 } catch (err) {
                     console.error('Failed to copy: ', err);
                 }
