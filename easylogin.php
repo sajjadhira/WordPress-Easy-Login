@@ -24,8 +24,10 @@ class EasyLogin
     public static $instance = null;
     public $file;
     public $plugin_dir;
+    public $pluginUrl;
     public function __construct()
     {
+        $this->pluginUrl = plugin_dir_url(__FILE__);
         $this->file = __FILE__;
         $this->plugin_dir = plugin_dir_path($this->file);
         $this->ext = strrchr(__FILE__, '.');

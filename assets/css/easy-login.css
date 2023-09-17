@@ -1,0 +1,41 @@
+.easylogin h2 {
+  font-weight: bold;
+  font-size: 2.5em;
+  text-align: center;
+}
+
+/* create card like bootstrap card */
+
+.easylogin .card {
+  border: none;
+  border-radius: 0;
+  box-shadow: 0 0 1.25rem rgba(31, 45, 61, 0.08);
+}
+
+/* image with no border */
+
+.easylogin .card img {
+  text-align: center;
+  border-radius: 0;
+  border: none;
+  margin: 0 auto;
+}
+
+.easylogin h4 {
+  font-weight: bold;
+  font-size: 1.5em;
+  text-align: center;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.easylogin .success-message {
+  background-color: #28a745;
+  color: #fff;
+  font-size: 1.5rem;
+  text-align: center;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}

@@ -70,7 +70,7 @@ class LoginComponent
     {
 
 
-
+        $this->autoDelete();
 
         if (isset($_GET['easy_login_from_token'])) {
 
@@ -291,10 +291,10 @@ class LoginComponent
         }
     }
 
-    public function autoDelete()
+    public static function autoDelete()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . rtrim($this->instance->plugin_prefix, "_");
+        $table_name = $wpdb->prefix . rtrim('easy_login_', "_");
 
         # count number of rows
 
