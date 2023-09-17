@@ -10,7 +10,7 @@ setInterval(function () {
         // set easyloginAdmin html to success message
 
         document.getElementById("easyloginAdmin").innerHTML =
-          "<div class='success-message'><strong>Login Success</strong><br /><p>You are logged in successfully. You can close this window.</p></div>";
+          "<div class='success-message'><strong><span class='dashicons dashicons-saved'></span> Login Success</strong><br /><p>You are logged in successfully. You can close this window.</p></div>";
       } else if (data.status == 404) {
         // reload page
         window.location.reload();
