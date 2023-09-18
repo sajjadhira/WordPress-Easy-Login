@@ -14,6 +14,7 @@ Text Domain: easy-login
 class EasyLogin
 {
     public $version = '1.0';
+    public $plugin_name = 'Easy Login';
     public $plugin_slug = 'easy-login';
     public $plugin_prefix = 'easy_login_';
     public $boot = 'boot';

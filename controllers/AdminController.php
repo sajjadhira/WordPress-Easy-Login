@@ -11,14 +11,28 @@ class AdminController
     function admin_menu()
     {
         add_menu_page(
-            'Easy Login',
-            'Easy Login',
+            __(ucfirst($this->instance->plugin_name), $this->instance->plugin_slug),
+            __(ucfirst($this->instance->plugin_name), $this->instance->plugin_slug),
             'manage_options',
-            'easy-login',
+            $this->instance->plugin_slug,
             array($this, 'easy_login_callback'),
             'dashicons-admin-network',
             100
         );
+
+        $submenus = ['settings' => 'Settings'];
+        foreach ($submenus as $key => $value) {
+            add_submenu_page(
+                $this->instance->plugin_name,
+                __($value, $this->instance->plugin_name),
+                __($value, $this->instance->plugin_name),
+                'manage_options',
+                $this->instance->plugin_prefix .  $key,
+                $this->instance->plugin_prefix . $key
+            );
+        }
+        // add sub menu page
+
     }
 
     function easy_login_callback()
