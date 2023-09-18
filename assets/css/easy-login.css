@@ -30,12 +30,11 @@
 }
 
 .easylogin .success-message {
-  background-color: #28a745;
-  color: #fff;
+  border: 1px solid #28a745;
   font-size: 1.5rem;
   text-align: center;
-  margin-top: 5px;
+  margin-top: 15px;
   margin-bottom: 5px;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: 20px;
+  padding-bottom: 15px;
 }

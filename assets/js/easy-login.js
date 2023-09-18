@@ -11,10 +11,11 @@ setInterval(function () {
 
         document.getElementById("easyloginAdmin").innerHTML =
           "<div class='success-message'><strong><span class='dashicons dashicons-saved'></span> Login Success</strong><br /><p>You are logged in successfully. You can close this window.</p></div>\
-          <dic class='logininfo'>" +
+          <div class='success-message'>" +
+          "<strong>Browser:</strong> " +
           data.browser +
-          "</div>\
-          <div class='logininfo'>" +
+          "<br/>" +
+          "<strong>IP:</strong> " +
           data.ip +
           "</div>";
       } else if (data.status == 404) {

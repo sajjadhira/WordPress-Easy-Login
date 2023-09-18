@@ -97,7 +97,7 @@ class LoginComponent
                     //         'wp_user_id' => $toke_query->wp_user_id,
                     //     )
                     // );
-                    echo json_encode(array('status' => 1));
+                    echo json_encode(array('status' => 1, 'browser' => $toke_query->browser, 'ip' => $toke_query->ip));
                     exit;
                 } else {
                     echo json_encode(array('status' => 0));
