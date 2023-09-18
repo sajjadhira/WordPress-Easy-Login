@@ -19,20 +19,6 @@ class AdminController
             'dashicons-admin-network',
             100
         );
-
-        $submenus = ['settings' => 'Settings'];
-        foreach ($submenus as $key => $value) {
-            add_submenu_page(
-                $this->instance->plugin_name,
-                __($value, $this->instance->plugin_name),
-                __($value, $this->instance->plugin_name),
-                'manage_options',
-                $this->instance->plugin_prefix .  $key,
-                $this->instance->plugin_prefix . $key
-            );
-        }
-        // add sub menu page
-
     }
 
     function easy_login_callback()
