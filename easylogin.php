@@ -4,7 +4,7 @@
 /*
 Plugin Name: Easy Login
 Plugin URI: http://pluginoo.com/plugins/easy-login
-Description: Easy Login is a simple plugin that allows you to create a login form that you can place anywhere on your WordPress site using a shortcode.
+Description: Easy Login is a simple plugin that allows you to login user via QR Code and URL. No need to share username and password for login.
 Version: 1.0
 Author: Pluginoo.com
 Author URI: http://pluginoo.com
@@ -26,6 +26,8 @@ class EasyLogin
     public $file;
     public $plugin_dir;
     public $pluginUrl;
+    public $pluginURI = 'http://pluginoo.com/plugins/easy-login';
+
     public function __construct()
     {
         $this->pluginUrl = plugin_dir_url(__FILE__);

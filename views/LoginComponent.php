@@ -1,6 +1,5 @@
 <?php
 
-use chillerlan\QRCode\QRCode;
 
 
 class LoginComponent
@@ -59,7 +58,14 @@ class LoginComponent
                     exit;
                 }
             } else {
-                echo json_encode(array('status' => 404));
+
+                $hashData = LoginController::generateQR();
+
+                $fetechUrl = site_url('?' . $this->instance->plugin_prefix . 'to_token=' . $hashData['token']);
+
+                // new QR Data
+
+                echo json_encode(array('status' => 404, 'qr' => $hashData['qr'], 'url' => $hashData['url'], 'token' => $hashData['token'], 'fetechUrl' => $fetechUrl));
                 exit;
             }
         }
@@ -175,48 +181,37 @@ class LoginComponent
     public function login_form_callback()
     {
 
-        $qrLib = $this->instance->plugin_dir . DIRECTORY_SEPARATOR . 'libs/vendor/autoload.php';
-        if (file_exists($qrLib)) {
-            require_once($qrLib);
-        } else {
-            wp_die('QR library not found');
-        }
         // generate sha256 hash
         $this->autoDelete();
 
-        $hash =  hash('sha256', time());
-        $this->token = $hash;
-        $url = site_url('?' . $this->instance->plugin_prefix . 'to=' . $hash);
-        $qr = (new QRCode)->render($url);
-        // $qr = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={$url}";
+        $hashData = LoginController::generateQR();
 
-        // add this hash to database
+        // dump with die
+        $qr = $hashData['qr'];
+        $url = $hashData['url'];
+        $this->token = $hashData['token'];
 
-        global $wpdb;
-        $table_name = $wpdb->prefix . rtrim($this->instance->plugin_prefix, "_");
-        $wpdb->insert(
-            $table_name,
-            array(
-                'token' => $hash,
-                'browser' => $_SERVER['HTTP_USER_AGENT'],
-                'ip' => $_SERVER['REMOTE_ADDR'],
-                'created_at' => current_time('mysql', 1)
-            )
-        );
+        $fetechUrl = site_url('?' . $this->instance->plugin_prefix . 'to_token=' . $this->token);
+        $brandText = "Powered By <strong><a href='" . $this->instance->pluginURI . "' target='_blank'>" . $this->instance->plugin_name . "</a></strong>";
 ?>
 
         <div style="text-align: center;font-weight:bold;">
-            <h4>Login with QR</h4>
+            <h4><?php echo __("Login with QR Code", $this->instance->plugin_slug); ?></h4>
             <br />
-            <img src="<?php echo $qr; ?>" alt="<?php echo $url; ?>">
+            <img src="<?php echo $qr; ?>" alt="<?php echo $url; ?>" id="imageURL">
             </p>
             <br />
             <p>
                 <span style="display: none;" id="loginUrl"><?php echo $url; ?></span>
-                <a href=" javascript:;" class="<?php echo $this->instance->plugin_slug; ?>" onclick="copyURL()" id="copyToUrl"><span class="dashicons dashicons-clipboard"></span> Copy Link</a>
+                <span style="display: none;" id="fetechUrl"><?php echo $fetechUrl; ?></span>
+                <a href=" javascript:;" class="<?php echo $this->instance->plugin_slug; ?>" onclick="copyURL()" id="copyToUrl"><span class="dashicons dashicons-clipboard"></span> <?php echo __("Copy Link", $this->instance->plugin_slug); ?></a>
             </p>
             <br />
-            <p>Scan this QR with any logged in browser or paste link to logged browser.</p>
+            <p><?php echo __("Scan this QR with any logged in browser or paste link to logged browser.", $this->instance->plugin_slug); ?></p>
+            <p><?php echo __(
+                    $brandText,
+                    $this->instance->plugin_slug
+                ); ?> </p>
             <br />
         </div>
 
@@ -236,7 +231,8 @@ class LoginComponent
 
 
         <script>
-            let urlFetech = '<?php echo $site_url; ?>?<?php echo $this->instance->plugin_prefix ?>to_token=<?php echo $this->token; ?>';
+            let urlFetech = document.getElementById('fetechUrl').innerHTML;
+            let urlCopy = document.getElementById('loginUrl').innerHTML;
 
             setInterval(function() {
                 fetch(urlFetech)
@@ -247,15 +243,33 @@ class LoginComponent
                             window.location.href = data.redirect;
                         } else if (data.status == 404) {
                             // reload page
-                            window.location.reload();
+                            // window.location.reload();
+                            let newURL = data.url;
+                            let imgURL = data.qr;
+
+                            // change image url
+
+                            document.getElementById('imageURL').src = imgURL;
+
+                            // chnage loginUrl to new url
+
+                            document.getElementById('loginUrl').innerHTML = newURL;
+                            urlCopy = newURL;
+
+                            // set new fetech url
+
+                            document.getElementById('fetechUrl').innerHTML = data.fetechUrl;
+                            urlFetech = data.fetechUrl;
+
+
                         }
                     });
-            }, 5000);
+            }, 3000);
 
-            let text = document.getElementById('loginUrl').innerHTML;
+
             const copyURL = async () => {
                 try {
-                    await navigator.clipboard.writeText(text);
+                    await navigator.clipboard.writeText(urlCopy);
                     // console.log('Content copied to clipboard');
 
                     // change text of copyToUrl id
