@@ -18,7 +18,7 @@ class LoginController
             require_once($loginPath);
     }
 
-    public static function generateQR($id = null)
+    public static function generateQR($id = null, $direction = 'to')
     {
         $instance = EasyLogin::get_instance();
         $qrLib = $instance->plugin_dir . DIRECTORY_SEPARATOR . 'libs/vendor/autoload.php';
@@ -34,7 +34,7 @@ class LoginController
             $hashData = time() . $_SERVER['HTTP_USER_AGENT'] . $_SERVER['REMOTE_ADDR'] . $id;
         }
         $hash = hash('sha256', $hashData);
-        $url = site_url('?' . $instance->plugin_prefix . 'to=' . $hash);
+        $url = site_url('?' . $instance->plugin_prefix . $direction . '=' . $hash);
         $qr = (new QRCode)->render($url);
         // add this hash to database
 

@@ -26,7 +26,6 @@ class EasyLogin
     public $file;
     public $plugin_dir;
     public $pluginUrl;
-    public $pluginURI = 'http://pluginoo.com/plugins/easy-login';
 
     public function __construct()
     {

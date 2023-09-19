@@ -15,8 +15,18 @@ class LoginComponent
 
         add_action('init', [$this, 'easylogin_login_callback']);
         add_action('init', [$this, 'easylogin_login_from_callback']);
+
+        // check if login page then load styles
+
+        add_action('login_enqueue_scripts', [$this, 'easylogin_fetch_styles']);
     }
 
+    function easylogin_fetch_styles()
+    {
+        // enqueue styles
+        wp_enqueue_style('easy-login-styles', $this->instance->pluginUrl . 'assets/css/easy-login.css');
+        wp_enqueue_script('easy-login-script', $this->instance->pluginUrl . 'assets/js/easy-login-loginpage.js', array('jquery'), '1.0.0', true);
+    }
     function easylogin_login_callback()
     {
 
@@ -110,7 +120,13 @@ class LoginComponent
                     exit;
                 }
             } else {
-                echo json_encode(array('status' => 404));
+                $current_id = get_current_user_id();
+                $hashData = LoginController::generateQR($current_id, 'from');
+                $fetechUrl = site_url('?' . $this->instance->plugin_prefix . 'from_token=' . $hashData['token']);
+
+                // new QR Data
+
+                echo json_encode(array('status' => 404, 'qr' => $hashData['qr'], 'url' => $hashData['url'], 'token' => $hashData['token'], 'fetechUrl' => $fetechUrl));
                 exit;
             }
         }
@@ -192,27 +208,20 @@ class LoginComponent
         $this->token = $hashData['token'];
 
         $fetechUrl = site_url('?' . $this->instance->plugin_prefix . 'to_token=' . $this->token);
-        $brandText = "Powered By <strong><a href='" . $this->instance->pluginURI . "' target='_blank'>" . $this->instance->plugin_name . "</a></strong>";
 ?>
 
-        <div style="text-align: center;font-weight:bold;">
-            <h4><?php echo __("Login with QR Code", $this->instance->plugin_slug); ?></h4>
-            <br />
-            <img src="<?php echo $qr; ?>" alt="<?php echo $url; ?>" id="imageURL">
-            </p>
-            <br />
+        <div class="easylogin-login">
+            <h2><?php echo __($this->instance->plugin_name, $this->instance->plugin_slug); ?></h2>
+            <img src="<?php echo $qr; ?>" alt="QR" id="imageURL">
+
             <p>
-                <span style="display: none;" id="loginUrl"><?php echo $url; ?></span>
-                <span style="display: none;" id="fetechUrl"><?php echo $fetechUrl; ?></span>
-                <a href=" javascript:;" class="<?php echo $this->instance->plugin_slug; ?>" onclick="copyURL()" id="copyToUrl"><span class="dashicons dashicons-clipboard"></span> <?php echo __("Copy Link", $this->instance->plugin_slug); ?></a>
+                <span class="d-none" id="loginUrl"><?php echo $url; ?></span>
+                <span class="d-none" id="fetechUrl"><?php echo $fetechUrl; ?></span>
+                <a href=" javascript:;" class="<?php echo $this->instance->plugin_slug; ?>" id="copyToUrl"><span class="dashicons dashicons-clipboard"></span> <?php echo __("Copy Link", $this->instance->plugin_slug); ?></a>
             </p>
-            <br />
             <p><?php echo __("Scan this QR with any logged in browser or paste link to logged browser.", $this->instance->plugin_slug); ?></p>
-            <p><?php echo __(
-                    $brandText,
-                    $this->instance->plugin_slug
-                ); ?> </p>
-            <br />
+
+
         </div>
 
 
@@ -222,69 +231,10 @@ class LoginComponent
 
     public function easylogin_fetch_callback()
     {
-
-        // get site url
-
-        $site_url = site_url();
     ?>
-        <!-- auto ajax request to specific url each 5 sec for checking user id assinged or not -->
-
-
         <script>
-            let urlFetech = document.getElementById('fetechUrl').innerHTML;
-            let urlCopy = document.getElementById('loginUrl').innerHTML;
-
-            setInterval(function() {
-                fetch(urlFetech)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status == 1) {
-                            // get redirect url
-                            window.location.href = data.redirect;
-                        } else if (data.status == 404) {
-                            // reload page
-                            // window.location.reload();
-                            let newURL = data.url;
-                            let imgURL = data.qr;
-
-                            // change image url
-
-                            document.getElementById('imageURL').src = imgURL;
-
-                            // chnage loginUrl to new url
-
-                            document.getElementById('loginUrl').innerHTML = newURL;
-                            urlCopy = newURL;
-
-                            // set new fetech url
-
-                            document.getElementById('fetechUrl').innerHTML = data.fetechUrl;
-                            urlFetech = data.fetechUrl;
-
-
-                        }
-                    });
-            }, 3000);
-
-
-            const copyURL = async () => {
-                try {
-                    await navigator.clipboard.writeText(urlCopy);
-                    // console.log('Content copied to clipboard');
-
-                    // change text of copyToUrl id
-
-                    document.getElementById('copyToUrl').innerHTML = '<span class="dashicons dashicons-saved"></span> Link Copied to clipboard';
-
-                    setTimeout(() => {
-                        // change text of copyToUrl id
-
-                        document.getElementById('copyToUrl').innerHTML = '<span class="dashicons dashicons-clipboard"></span> Copy Link';
-                    }, 5000);
-                } catch (err) {
-                    console.error('Failed to copy: ', err);
-                }
-            }
+            let copyText = '<span class="dashicons dashicons-clipboard"></span> <?php echo __("Copy Link", $this->instance->plugin_slug); ?>';
+            let copiedText = '<span class="dashicons dashicons-saved"></span> <?php echo __("Link Copied to Clipboard", $this->instance->plugin_slug); ?>';
         </script>
 <?php
     }
@@ -318,7 +268,7 @@ class LoginComponent
     public static function autoDelete()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . rtrim('easy_login_', "_");
+        $table_name = $wpdb->prefix . rtrim(EasyLogin::get_instance()->plugin_prefix, "_");
 
         # count number of rows
 

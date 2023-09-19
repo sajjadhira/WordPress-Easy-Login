@@ -1,3 +1,8 @@
+.easylogin p {
+  font-size: 1.5em;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
 .easylogin h2 {
   font-weight: bold;
   font-size: 2.5em;
@@ -37,4 +42,22 @@
   margin-bottom: 5px;
   padding-top: 20px;
   padding-bottom: 15px;
+}
+
+.d-none {
+  display: none;
+}
+
+.easylogin-login {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.easylogin-login a {
+  color: #007bff;
+  text-decoration: none;
+  font-size: 1.5em;
+}
+.easylogin-login .dashicons {
+  font-size: 1.5em;
+  margin-right: 15px;
 }
