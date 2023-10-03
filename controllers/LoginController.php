@@ -40,8 +40,8 @@ class LoginController
 
         $dataDB = array(
             'token' => $hash,
-            'browser' => $_SERVER['HTTP_USER_AGENT'],
-            'ip' => $_SERVER['REMOTE_ADDR'],
+            'browser' => sanitize_text_field($_SERVER['HTTP_USER_AGENT']),
+            'ip' => sanitize_text_field($_SERVER['REMOTE_ADDR']),
             'created_at' => current_time('mysql', 1)
         );
         if (!is_null($id)) {
